@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Dashboard</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    
+    <!-- Custom CSS - EN ORDEN -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/reset.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="sidebar-logo">Dashboard</h1>
+            </div>
+
+            <nav class="sidebar-nav">
+                <!-- Categoría: Prospectos -->
+                <div class="nav-category">
+                    <div class="nav-category-header">
+                        <i data-feather="users"></i>
+                        <span>Prospectos</span>
+                        <i data-feather="chevron-down" class="category-arrow"></i>
+                    </div>
+                    <div class="nav-category-items">
+                        <a href="/prospectos/raw" class="nav-item {% if current_module == 'prospectos' %}active{% endif %}">
+                            <i data-feather="inbox"></i>
+                            <span>Prospectos RAW</span>
+                        </a>
+                        <a href="/prospectos_activos/" class="nav-item {% if current_module == 'prospectos_activos' %}active{% endif %}">
+                            <i data-feather="check-circle"></i>
+                            <span>Prospectos Activos</span>
+                        </a>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <!-- Configuraciones -->
+                <a href="/configuraciones" class="nav-item config-item {% if current_module == 'configuraciones' %}active{% endif %}">
+                    <i data-feather="settings"></i>
+                    <span>Configuraciones</span>
+                </a>
+
+                <!-- Theme Selector -->
+                <div class="theme-selector">
+                    <div class="theme-colors">
+                        <button class="theme-color active" data-color="#25D366" style="background-color: #25D366;" title="Verde WhatsApp"></button>
+                        <button class="theme-color" data-color="#0084FF" style="background-color: #0084FF;" title="Azul Docker"></button>
+                        <button class="theme-color-add" title="Agregar color">
+                            <i data-feather="plus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-wrapper">
+                {% block content %}
+                <!-- El contenido específico de cada módulo irá aquí -->
+                {% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <!-- Color Picker Modal (hidden by default) -->
+    <div class="modal fade" id="colorPickerModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Seleccionar Color Personalizado</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="color" id="customColorPicker" value="#25D366" class="form-control form-control-color w-100">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="addCustomColor()">Agregar Color</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+    
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <script>
+        // Inicializar Feather Icons
+        feather.replace();
+
+        // Toggle category
+        document.querySelectorAll('.nav-category-header').forEach(header => {
+            header.addEventListener('click', function() {
+                const category = this.parentElement;
+                const items = category.querySelector('.nav-category-items');
+                const arrow = this.querySelector('.category-arrow');
+                
+                category.classList.toggle('expanded');
+                
+                if (category.classList.contains('expanded')) {
+                    items.style.maxHeight = items.scrollHeight + 'px';
+                    arrow.style.transform = 'rotate(0deg)';
+                } else {
+                    items.style.maxHeight = '0';
+                    arrow.style.transform = 'rotate(-90deg)';
+                }
+            });
+        });
+
+        // Expandir categoría si hay un item activo
+        document.addEventListener('DOMContentLoaded', function() {
+            const activeItem = document.querySelector('.nav-category-items .nav-item.active');
+            if (activeItem) {
+                const category = activeItem.closest('.nav-category');
+                const items = category.querySelector('.nav-category-items');
+                const arrow = category.querySelector('.category-arrow');
+                
+                category.classList.add('expanded');
+                items.style.maxHeight = items.scrollHeight + 'px';
+                arrow.style.transform = 'rotate(0deg)';
+            }
+            
+            feather.replace();
+        });
+    </script>
+</body>
+</html>

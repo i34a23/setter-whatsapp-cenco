@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Dashboard - Administración</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔧 WhatsApp Dashboard</h1>
+            <p class="subtitle">Panel de Administración</p>
+        </header>
+
+        <main>
+            <div class="welcome-card">
+                <h2>Bienvenido al Dashboard</h2>
+                <p>Sistema de administración para el Setter de WhatsApp</p>
+            </div>
+
+            <div class="status-section">
+                <h3>Estado del Sistema</h3>
+                <div class="status-grid">
+                    <div class="status-item">
+                        <span class="status-label">Aplicación:</span>
+                        <span class="status-value online">● Online</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Base de Datos:</span>
+                        <span class="status-value" id="db-status">⏳ Verificando...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="actions-section">
+                <h3>Acciones Disponibles</h3>
+                <p class="info-text">El sistema está listo. Próximamente se agregarán funcionalidades.</p>
+            </div>
+        </main>
+
+        <footer>
+            <p>WhatsApp Dashboard v1.0 - Proyecto Base</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

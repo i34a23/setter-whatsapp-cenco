@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="module-header">
+    <div class="header-content">
+        <div>
+            <h2>Prospectos RAW</h2>
+            <p class="module-description">Gestiona y administra tus listas de prospectos</p>
+        </div>
+        <button class="btn-primary" onclick="openUploadModal()">
+            <i data-feather="upload"></i>
+            Subir Lista
+        </button>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="stats-grid" id="statsGrid" style="display: none;">
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i data-feather="users"></i>
+        </div>
+        <div class="stat-content">
+            <p class="stat-label">Total Prospectos</p>
+            <p class="stat-value" id="totalProspectos">0</p>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de Prospectos -->
+<div class="module-content">
+    <div class="empty-state" id="emptyState">
+        <i data-feather="users" style="width: 64px; height: 64px; color: var(--color-text-tertiary);"></i>
+        <h3>No hay prospectos cargados</h3>
+        <p>Comienza subiendo tu primera lista de prospectos</p>
+        <button class="btn-primary" onclick="openUploadModal()">
+            <i data-feather="upload"></i>
+            Subir Lista
+        </button>
+    </div>
+
+    <div id="prospectosTable" style="display: none;">
+        <div class="table-controls">
+            <div class="table-header">
+                <h3>Lista de Prospectos</h3>
+                <div class="header-actions">
+                    <button class="btn-primary" onclick="activarSeleccionados()" id="btnActivar" disabled>
+                        <i data-feather="check-circle"></i>
+                        Activar Seleccionados (<span id="selectedCount">0</span>)
+                    </button>
+                    <button class="btn-secondary" onclick="refreshProspectos()">
+                        <i data-feather="refresh-cw"></i>
+                        Actualizar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px; text-align: center;">
+                            <input type="checkbox" id="selectAll" onchange="toggleSelectAll()" style="display: none;">
+                            <button class="btn-icon" id="btnToggleSelect" onclick="toggleSelectMode()"
+                                title="Activar selección múltiple">
+                                <i data-feather="check-square"></i>
+                            </button>
+                        </th>
+                        <th style="min-width: 120px;">
+                            <div class="th-content">
+                                <span>Nombre</span>
+                                <div class="th-actions">
+                                    <button class="sort-indicator" data-sort="nombre" onclick="sortBy('nombre')"
+                                        title="Ordenar">
+                                        <i data-feather="chevrons-up-down"></i>
+                                    </button>
+                                    <button class="filter-btn" onclick="openFilterDropdown('nombre', event)"
+                                        title="Filtrar">
+                                        <i data-feather="filter" class="filter-icon"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </th>
+                        <th style="min-width: 120px;">
+                            <div class="th-content">
+                                <span>Apellidos</span>
+                                <div class="th-actions">
+                                    <button class="sort-indicator" data-sort="apellidos" onclick="sortBy('apellidos')"
+                                        title="Ordenar">
+                                        <i data-feather="chevrons-up-down"></i>
+                                    </button>
+                                    <button class="filter-btn" onclick="openFilterDropdown('apellidos', event)"
+                                        title="Filtrar">
+                                        <i data-feather="filter" class="filter-icon"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </th>
+                        <th style="min-width: 200px;">
+                            <div class="th-content">
+                                <span>Email</span>
+                                <div class="th-actions">
+                                    <button class="sort-indicator" data-sort="email_1" onclick="sortBy('email_1')"
+                                        title="Ordenar">
+                                        <i data-feather="chevrons-up-down"></i>
+                                    </button>
+                                    <button class="filter-btn" onclick="openFilterDropdown('email_1', event)"
+                                        title="Filtrar">
+                                        <i data-feather="filter" class="filter-icon"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </th>
+                        <th style="min-width: 130px;">
+                            <div class="th-content">
+                                <span>Teléfono</span>
+                                <div class="th-actions">
+                                    <button class="sort-indicator" data-sort="telefono_1" onclick="sortBy('telefono_1')"
+                                        title="Ordenar">
+                                        <i data-feather="chevrons-up-down"></i>
+                                    </button>
+                                    <button class="filter-btn" onclick="openFilterDropdown('telefono_1', event)"
+                                        title="Filtrar">
+                                        <i data-feather="filter" class="filter-icon"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </th>
+                        <th style="min-width: 150px;">
+                            <div class="th-content">
+                                <span>Programa</span>
+                                <div class="th-actions">
+                                    <button class="sort-indicator" data-sort="programa" onclick="sortBy('programa')"
+                                        title="Ordenar">
+                                        <i data-feather="chevrons-up-down"></i>
+                                    </button>
+                                    <button class="filter-btn" onclick="openFilterDropdown('programa', event)"
+                                        title="Filtrar">
+                                        <i data-feather="filter" class="filter-icon"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </th>
+                        <th style="min-width: 120px;">
+                            <div class="th-content">
+                                <span>Propietario</span>
+                                <div class="th-actions">
+                                    <button class="sort-indicator" data-sort="propietario"
+                                        onclick="sortBy('propietario')" title="Ordenar">
+                                        <i data-feather="chevrons-up-down"></i>
+                                    </button>
+                                    <button class="filter-btn" onclick="openFilterDropdown('propietario', event)"
+                                        title="Filtrar">
+                                        <i data-feather="filter" class="filter-icon"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </th>
+                        <th style="min-width: 100px;">
+                            <div class="th-content">
+                                <span>Fecha</span>
+                                <div class="th-actions">
+                                    <button class="sort-indicator active desc" data-sort="fecha_creacion"
+                                        onclick="sortBy('fecha_creacion')" title="Ordenar">
+                                        <i data-feather="chevron-down"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="prospectosTableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginación -->
+        <div class="pagination">
+            <button class="btn-secondary" onclick="previousPage()" id="btnPrev" disabled>
+                <i data-feather="chevron-left"></i>
+                Anterior
+            </button>
+            <span class="pagination-info">
+                Página <span id="currentPage">1</span> de <span id="totalPages">1</span>
+                (Mostrando <span id="showingCount">0</span> de <span id="totalCount">0</span>)
+            </span>
+            <button class="btn-secondary" onclick="nextPage()" id="btnNext">
+                Siguiente
+                <i data-feather="chevron-right"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Dropdown -->
+<div class="filter-dropdown" id="filterDropdown" style="display: none;">
+    <div class="filter-dropdown-header">
+        <input type="text" class="filter-search" id="filterSearch" placeholder="Buscar...">
+    </div>
+    <div class="filter-dropdown-body" id="filterDropdownBody">
+        <label class="filter-option">
+            <input type="checkbox" class="filter-checkbox-all" onchange="toggleFilterAll()">
+            <span>(Seleccionar todos)</span>
+        </label>
+        <div class="filter-options-list" id="filterOptionsList">
+        </div>
+    </div>
+    <div class="filter-dropdown-footer">
+        <button class="btn-secondary btn-sm" onclick="clearColumnFilter()">Limpiar</button>
+        <button class="btn-primary btn-sm" onclick="applyColumnFilter()">Aplicar</button>
+    </div>
+</div>
+
+<!-- Modal de Carga -->
+<div class="modal" id="uploadModal">
+    <div class="modal-content modal-large">
+        <div class="modal-header">
+            <h3>Subir Lista de Prospectos</h3>
+            <button class="modal-close" onclick="closeUploadModal()">
+                <i data-feather="x"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div id="step1" class="upload-step">
+                <div class="upload-zone" id="uploadZone">
+                    <i data-feather="upload-cloud" style="width: 48px; height: 48px;"></i>
+                    <p>Arrastra tu archivo aquí o haz clic para seleccionar</p>
+                    <p class="upload-hint">Formatos aceptados: CSV, XLSX, XLS</p>
+                    <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" style="display: none;">
+                </div>
+                <div id="uploadProgress" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <p id="progressText">Procesando archivo...</p>
+                </div>
+            </div>
+
+            <div id="step2" class="upload-step" style="display: none;">
+                <div class="step-header">
+                    <h4>Mapeo de Columnas</h4>
+                    <p>Asocia las columnas de tu archivo con los campos del sistema</p>
+                </div>
+
+                <div class="preview-section">
+                    <h5>Vista Previa del Archivo</h5>
+                    <div class="preview-info">
+                        <span id="previewFilename"></span>
+                        <span id="previewRows"></span>
+                    </div>
+                </div>
+
+                <div class="mapping-container" id="mappingContainer">
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn-secondary" onclick="backToStep1()">
+                        <i data-feather="arrow-left"></i>
+                        Atrás
+                    </button>
+                    <button class="btn-primary" id="btnImport" onclick="importData()">
+                        <i data-feather="check"></i>
+                        Importar Datos
+                    </button>
+                </div>
+            </div>
+
+            <div id="step3" class="upload-step" style="display: none;">
+                <div class="success-message">
+                    <i data-feather="check-circle" style="width: 64px; height: 64px; color: var(--color-success);"></i>
+                    <h4>¡Importación Exitosa!</h4>
+                    <p id="successMessage"></p>
+                    <button class="btn-primary" onclick="closeUploadModal()">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/prospectos.css') }}">
+<script src="{{ url_for('static', filename='js/prospectos.js') }}"></script>
+<script>
+    feather.replace();
+    loadProspectos();
+    loadStats();
+</script>
+{% endblock %}

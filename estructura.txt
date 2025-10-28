@@ -1,0 +1,48 @@
+.
+├── Dockerfile
+├── README.md
+├── __pycache__
+│   └── database.cpython-311.pyc
+├── app.py
+├── database.py
+├── database_schema.sql
+├── docker-compose.yml
+├── estructura.txt
+├── flask_session
+│   ├── 2029240f6d1128be89ddc32729463129
+│   ├── 843c5f7dfbdd7ccfd9841ec1fa2139ee
+│   ├── aa0d6888c2b94380de49d05569f3ad2a
+│   ├── bf84c83b3e6b207808601056fe7f2dce
+│   └── cc4b8b947b0e44a22e486e9707cfe2d0
+├── init_db.py
+├── modules
+│   └── prospectos
+│       ├── __init__.py
+│       └── __pycache__
+│           └── __init__.cpython-311.pyc
+├── requirements.txt
+├── static
+│   ├── css
+│   │   ├── main.css
+│   │   ├── prospectos.css
+│   │   ├── reset.css
+│   │   ├── sidebar.css
+│   │   └── theme.css
+│   ├── icons
+│   └── js
+│       ├── main.js
+│       ├── prospectos.js
+│       └── theme.js
+├── templates
+│   ├── base.html
+│   ├── index.html
+│   └── modules
+│       └── prospectos_raw.html
+└── utils
+    ├── __init__.py
+    ├── __pycache__
+    │   ├── __init__.cpython-311.pyc
+    │   └── file_processor.cpython-311.pyc
+    └── file_processor.py
+
+14 directories, 32 files

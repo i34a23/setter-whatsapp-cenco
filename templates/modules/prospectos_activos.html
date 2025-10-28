@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="module-header">
+    <div class="header-content">
+        <div>
+            <h2>Prospectos Activos</h2>
+            <p class="module-description">Gestiona prospectos en proceso</p>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de Prospectos -->
+<div class="module-content">
+    <div id="prospectosTable">
+        <div class="table-controls">
+            <div class="table-header">
+                <h3>Lista de Prospectos</h3>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="activarSeleccionados()" id="btnActivar" disabled>
+                        <i data-feather="check-circle"></i>
+                        Activar Seleccionados (<span id="selectedCount">0</span>)
+                    </button>
+                    <button class="btn btn-secondary" onclick="refreshProspectos()">
+                        <i data-feather="refresh-cw"></i>
+                        Actualizar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table class="table data-table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 50px; text-align: center;">
+                            <input type="checkbox" class="form-check-input" id="selectAll" onchange="toggleSelectAll()" style="display: none;">
+                            <button class="btn-icon" id="btnToggleSelect" onclick="toggleSelectMode()"
+                                title="Activar selección múltiple">
+                                <i data-feather="check-square"></i>
+                            </button>
+                        </th>
+                        <th style="min-width: 120px;">
+                            <div class="th-content">
+                                <span>Nombre</span>
+                                <div class="th-actions">
+                                    <button class="sort-indicator" data-sort="nombre" onclick="sortBy('nombre')"
+                                        title="Ordenar">
+                                        <i data-feather="chevrons-up-down"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </th>
+                        <th style="min-width: 120px;">
+                            <div class="th-content">
+                                <span>Apellido</span>
+                                <div class="th-actions">
+                                    <button class="sort-indicator" data-sort="apellido" onclick="sortBy('apellido')"
+                                        title="Ordenar">
+                                        <i data-feather="chevrons-up-down"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </th>
+                        <th style="min-width: 250px;">
+                            <div class="th-content">
+                                <span>Carrera</span>
+                                <div class="th-actions">
+                                    <button class="sort-indicator" data-sort="carrera" onclick="sortBy('carrera')"
+                                        title="Ordenar">
+                                        <i data-feather="chevrons-up-down"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </th>
+                        <th style="min-width: 120px;">
+                            <div class="th-content">
+                                <span>Plan</span>
+                            </div>
+                        </th>
+                        <th style="min-width: 80px;">
+                            <div class="th-content">
+                                <span>Exp.</span>
+                            </div>
+                        </th>
+                        <th style="min-width: 100px;">
+                            <div class="th-content">
+                                <span>Estado</span>
+                            </div>
+                        </th>
+                        <th style="min-width: 80px;">
+                            <div class="th-content">
+                                <span>Días</span>
+                                <div class="th-actions">
+                                    <button class="sort-indicator active desc" data-sort="dias_transcurridos"
+                                        onclick="sortBy('dias_transcurridos')" title="Ordenar">
+                                        <i data-feather="chevron-down"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </th>
+                        <th style="min-width: 100px;">
+                            <div class="th-content">
+                                <span>Mensajes</span>
+                                <div class="th-actions">
+                                    <button class="sort-indicator" data-sort="mensaje_count"
+                                        onclick="sortBy('mensaje_count')" title="Ordenar">
+                                        <i data-feather="chevrons-up-down"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </th>
+                        <th style="min-width: 180px;">
+                            <div class="th-content">
+                                <span>Followups</span>
+                            </div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="prospectosTableBody">
+                    <tr>
+                        <td colspan="10" style="text-align: center; padding: 40px;">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                            <p style="margin-top: 16px; color: var(--color-text-secondary);">Cargando...</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginación -->
+        <div class="pagination">
+            <button class="btn btn-secondary" onclick="previousPage()" id="btnPrev" disabled>
+                <i data-feather="chevron-left"></i>
+                Anterior
+            </button>
+            <span class="pagination-info">
+                Página <span id="currentPage">1</span> de <span id="totalPages">1</span>
+                (Mostrando <span id="showingCount">0</span> de <span id="totalCount">0</span>)
+            </span>
+            <button class="btn btn-secondary" onclick="nextPage()" id="btnNext">
+                Siguiente
+                <i data-feather="chevron-right"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Chat -->
+<div class="modal fade" id="chatModal" tabindex="-1" aria-labelledby="chatModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl" style="max-width: 1400px !important; width: 90vw !important;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="chat-header-info">
+                    <h5 class="modal-title" id="chatModalLabel">
+                        <i data-feather="message-circle"></i>
+                        <span id="chatProspectoNombre">Historial de Conversación</span>
+                    </h5>
+                    <div class="chat-header-details" id="chatProspectoDetails">
+                        <!-- Se llena dinámicamente -->
+                    </div>
+                </div>
+                <button type="button" class="btn-close" onclick="closeChatModal()" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="chat-container" id="chatContainer">
+                    <div class="chat-loading" id="chatLoading">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Cargando mensajes...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Cargando mensajes...</p>
+                    </div>
+                    <div class="chat-messages" id="chatMessages">
+                        <!-- Mensajes se cargan aquí dinámicamente -->
+                    </div>
+                    <div class="chat-empty" id="chatEmpty" style="display: none;">
+                        <i data-feather="inbox"></i>
+                        <p>No hay mensajes para mostrar</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeChatModal()">
+                    <i data-feather="x"></i>
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/prospectos.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chat-modal.css') }}">
+<script src="{{ url_for('static', filename='js/prospectos_activos.js') }}"></script>
+<script>
+    feather.replace();
+    loadProspectos();
+</script>
+{% endblock %}

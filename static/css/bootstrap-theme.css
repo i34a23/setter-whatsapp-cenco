@@ -1,0 +1,394 @@
+/* Bootstrap 5 Theme Integration */
+/* Sobrescribe Bootstrap con nuestro sistema de diseño */
+
+/* ========================================
+   BOOTSTRAP VARIABLES OVERRIDE
+   ======================================== */
+
+/* Colores principales de Bootstrap usando nuestras variables */
+:root {
+    /* Bootstrap color system override */
+    --bs-primary: var(--color-primary);
+    --bs-primary-rgb: 37, 211, 102;
+    --bs-secondary: var(--color-bg-tertiary);
+    --bs-secondary-rgb: 241, 243, 245;
+    --bs-success: var(--color-success);
+    --bs-danger: var(--color-error);
+    --bs-warning: var(--color-warning);
+    --bs-info: var(--color-info);
+    
+    /* Background colors */
+    --bs-body-bg: var(--color-bg-secondary);
+    --bs-body-color: var(--color-text-primary);
+    
+    /* Border */
+    --bs-border-color: var(--color-border-primary);
+    --bs-border-radius: var(--radius-md);
+    --bs-border-radius-sm: var(--radius-sm);
+    --bs-border-radius-lg: var(--radius-lg);
+    
+    /* Typography */
+    --bs-body-font-size: 0.875rem;
+    --bs-body-font-weight: 400;
+    --bs-body-line-height: 1.5;
+}
+
+/* ========================================
+   BOOTSTRAP BUTTONS
+   ======================================== */
+
+.btn {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    transition: all var(--transition-base);
+    border: none;
+}
+
+.btn-primary {
+    background-color: var(--color-primary) !important;
+    border-color: var(--color-primary) !important;
+    color: white !important;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: var(--color-primary-hover) !important;
+    border-color: var(--color-primary-hover) !important;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-primary:disabled {
+    background-color: var(--color-border-secondary) !important;
+    border-color: var(--color-border-secondary) !important;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    background-color: var(--color-bg-tertiary) !important;
+    border-color: var(--color-border-primary) !important;
+    color: var(--color-text-primary) !important;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background-color: var(--color-border-secondary) !important;
+    border-color: var(--color-border-secondary) !important;
+}
+
+.btn-success {
+    background-color: var(--color-success) !important;
+    border-color: var(--color-success) !important;
+}
+
+.btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* ========================================
+   BOOTSTRAP TABLES
+   ======================================== */
+
+.table {
+    --bs-table-bg: var(--color-bg-primary);
+    --bs-table-color: var(--color-text-primary);
+    --bs-table-border-color: var(--color-border-primary);
+    --bs-table-hover-bg: var(--color-bg-secondary);
+    --bs-table-hover-color: var(--color-text-primary);
+    
+    font-size: 0.875rem;
+    border-collapse: collapse;
+}
+
+.table thead {
+    background: var(--color-bg-secondary);
+}
+
+.table thead th {
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-secondary);
+    border-bottom: 1px solid var(--color-border-primary);
+    padding: var(--spacing-sm) var(--spacing-md);
+    vertical-align: middle;
+}
+
+.table tbody td {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-bottom: 1px solid var(--color-border-primary);
+    vertical-align: middle;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.table-hover tbody tr {
+    transition: background-color var(--transition-fast);
+}
+
+.table-hover tbody tr:hover {
+    background-color: var(--color-bg-secondary) !important;
+}
+
+/* Selected row state */
+.table tbody tr.selected {
+    background-color: var(--color-primary-light) !important;
+}
+
+.table-hover tbody tr.selected:hover {
+    background-color: rgba(37, 211, 102, 0.15) !important;
+}
+
+/* ========================================
+   BOOTSTRAP FORMS
+   ======================================== */
+
+.form-control {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.875rem;
+    border: 1px solid var(--color-border-primary);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.form-control:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 0.25rem var(--color-primary-light);
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+}
+
+.form-control::placeholder {
+    color: var(--color-text-quaternary);
+}
+
+.form-check-input {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--color-border-primary);
+    background-color: var(--color-bg-primary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.form-check-input:checked {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.form-check-input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 0.25rem var(--color-primary-light);
+}
+
+.input-group-text {
+    background-color: var(--color-bg-primary);
+    border: 1px solid var(--color-border-primary);
+    color: var(--color-text-secondary);
+    padding: var(--spacing-sm) var(--spacing-md);
+}
+
+/* ========================================
+   BOOTSTRAP CARDS
+   ======================================== */
+
+.card {
+    background-color: var(--color-bg-primary);
+    border: 1px solid var(--color-border-primary);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-base);
+}
+
+.card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.card-body {
+    padding: var(--spacing-lg);
+}
+
+.card-header {
+    background-color: var(--color-bg-secondary);
+    border-bottom: 1px solid var(--color-border-primary);
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-weight: 600;
+}
+
+/* ========================================
+   BOOTSTRAP BADGES
+   ======================================== */
+
+.badge {
+    padding: 0.25rem 0.625rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: var(--radius-md);
+}
+
+.bg-primary {
+    background-color: var(--color-primary) !important;
+}
+
+.bg-secondary {
+    background-color: var(--color-bg-tertiary) !important;
+    color: var(--color-text-primary) !important;
+}
+
+.bg-success {
+    background-color: var(--color-success) !important;
+}
+
+/* ========================================
+   BOOTSTRAP MODALS
+   ======================================== */
+
+.modal-content {
+    background-color: var(--color-bg-primary);
+    border: 1px solid var(--color-border-primary);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--color-border-primary);
+    padding: var(--spacing-lg);
+}
+
+.modal-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.modal-body {
+    padding: var(--spacing-lg);
+}
+
+.modal-footer {
+    border-top: 1px solid var(--color-border-primary);
+    padding: var(--spacing-md) var(--spacing-lg);
+}
+
+.btn-close {
+    filter: invert(0);
+    opacity: 0.5;
+}
+
+.btn-close:hover {
+    opacity: 1;
+}
+
+/* ========================================
+   BOOTSTRAP PAGINATION
+   ======================================== */
+
+.pagination {
+    gap: var(--spacing-xs);
+}
+
+.page-link {
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-primary);
+    border: 1px solid var(--color-border-primary);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.875rem;
+    transition: all var(--transition-fast);
+}
+
+.page-link:hover {
+    background-color: var(--color-bg-secondary);
+    border-color: var(--color-border-secondary);
+    color: var(--color-text-primary);
+}
+
+.page-link:focus {
+    box-shadow: 0 0 0 0.25rem var(--color-primary-light);
+}
+
+.page-item.disabled .page-link {
+    background-color: var(--color-bg-tertiary);
+    border-color: var(--color-border-primary);
+    opacity: 0.5;
+}
+
+/* ========================================
+   BOOTSTRAP SPINNER
+   ======================================== */
+
+.spinner-border {
+    color: var(--color-primary);
+    width: 40px;
+    height: 40px;
+    border-width: 3px;
+}
+
+/* ========================================
+   BOOTSTRAP UTILITIES OVERRIDE
+   ======================================== */
+
+.text-muted {
+    color: var(--color-text-secondary) !important;
+}
+
+.text-primary {
+    color: var(--color-primary) !important;
+}
+
+.bg-light {
+    background-color: var(--color-bg-secondary) !important;
+}
+
+.border {
+    border-color: var(--color-border-primary) !important;
+}
+
+.shadow-sm {
+    box-shadow: var(--shadow-sm) !important;
+}
+
+.shadow {
+    box-shadow: var(--shadow-md) !important;
+}
+
+.shadow-lg {
+    box-shadow: var(--shadow-lg) !important;
+}
+
+/* ========================================
+   SPACING UTILITIES CONSISTENCY
+   ======================================== */
+
+/* Ensure Bootstrap spacing matches our system */
+.p-0 { padding: 0 !important; }
+.p-1 { padding: var(--spacing-xs) !important; }
+.p-2 { padding: var(--spacing-sm) !important; }
+.p-3 { padding: var(--spacing-md) !important; }
+.p-4 { padding: var(--spacing-lg) !important; }
+.p-5 { padding: var(--spacing-xl) !important; }
+
+.m-0 { margin: 0 !important; }
+.m-1 { margin: var(--spacing-xs) !important; }
+.m-2 { margin: var(--spacing-sm) !important; }
+.m-3 { margin: var(--spacing-md) !important; }
+.m-4 { margin: var(--spacing-lg) !important; }
+.m-5 { margin: var(--spacing-xl) !important; }
+
+.gap-1 { gap: var(--spacing-xs) !important; }
+.gap-2 { gap: var(--spacing-sm) !important; }
+.gap-3 { gap: var(--spacing-md) !important; }
+.gap-4 { gap: var(--spacing-lg) !important; }
