@@ -12,11 +12,20 @@ def prospectos_activos():
 
 @prospectos_activos_bp.route('/api/list')
 def list_activos():
-    """API para listar prospectos activos con paginación"""
+    """API para listar prospectos activos con paginación y filtros"""
     try:
         page = int(request.args.get('page', 1))
         page_size = int(request.args.get('page_size', 50))
         search = request.args.get('search', '').strip()
+        
+        # Nuevos parámetros de filtro
+        filter_estado = request.args.get('estado', '').strip()
+        filter_carrera = request.args.get('carrera', '').strip()
+        filter_plan = request.args.get('plan', '').strip()
+        
+        # Parámetros de ordenamiento
+        sort_by = request.args.get('sort_by', 'dias_transcurridos')
+        sort_order = request.args.get('sort_order', 'DESC')
         
         conn = get_db_connection()
         if not conn:
@@ -56,6 +65,19 @@ def list_activos():
             """)
             params.extend([search_pattern] * 4)
         
+        # Filtros adicionales
+        if filter_estado:
+            where_clauses.append("estado = %s")
+            params.append(filter_estado)
+        
+        if filter_carrera:
+            where_clauses.append("carrera_interes = %s")
+            params.append(filter_carrera)
+        
+        if filter_plan:
+            where_clauses.append("plan = %s")
+            params.append(filter_plan)
+        
         where_sql = ' AND '.join(where_clauses) if where_clauses else '1=1'
         
         # Contar total
@@ -74,18 +96,32 @@ def list_activos():
         """)
         chat_exists = cursor.fetchone()['exists']
         
+        # Validar columna de ordenamiento
+        valid_sort_columns = {
+            'nombre': 'l.nombre',
+            'apellido': 'l.apellido',
+            'carrera': 'l.carrera_interes',
+            'dias_transcurridos': 'l.dias_transcurridos',
+            'mensaje_count': 'mensaje_count',
+            'fecha_primer_contacto': 'l.fecha_primer_contacto'
+        }
+        
+        sort_column = valid_sort_columns.get(sort_by, 'l.dias_transcurridos')
+        sort_direction = 'ASC' if sort_order.upper() == 'ASC' else 'DESC'
+        
         # Construir query con o sin LEFT JOIN según exista la tabla
         if chat_exists:
             query = f"""
                 SELECT 
                     l.id, l.nombre, l.apellido, l.email, l.telefono, l.carrera_interes,
                     l.experiencia_laboral, l.plan, l.estado, l.nivel_intencion,
-                    l.dias_transcurridos, l.descuento_actual,
+                    l.dias_transcurridos, l.descuento_actual, l.fecha_primer_contacto,
                     l.followup_dia3_enviado, l.followup_dia3_fecha,
                     l.followup_dia5_enviado, l.followup_dia5_fecha,
                     l.followup_dia6_enviado, l.followup_dia6_fecha,
                     l.followup_dia8_enviado, l.followup_dia8_fecha,
-                    l.derivado_a_humano, l.agente_asignado,
+                    l.derivado_a_humano, l.agente_asignado, l.chat_status, l.notas,
+                    l.fecha_derivacion, l.razon_derivacion,
                     l.created_at, l.updated_at,
                     COALESCE(m.mensaje_count, 0) as mensaje_count
                 FROM leads l
@@ -99,7 +135,7 @@ def list_activos():
                     l.telefono = REPLACE(m.session_id, '56', '')
                 )
                 WHERE {where_sql}
-                ORDER BY l.dias_transcurridos DESC, l.updated_at DESC
+                ORDER BY {sort_column} {sort_direction}, l.updated_at DESC
                 LIMIT %s OFFSET %s
             """
         else:
@@ -107,17 +143,18 @@ def list_activos():
                 SELECT 
                     id, nombre, apellido, email, telefono, carrera_interes,
                     experiencia_laboral, plan, estado, nivel_intencion,
-                    dias_transcurridos, descuento_actual,
+                    dias_transcurridos, descuento_actual, fecha_primer_contacto,
                     followup_dia3_enviado, followup_dia3_fecha,
                     followup_dia5_enviado, followup_dia5_fecha,
                     followup_dia6_enviado, followup_dia6_fecha,
                     followup_dia8_enviado, followup_dia8_fecha,
-                    derivado_a_humano, agente_asignado,
+                    derivado_a_humano, agente_asignado, chat_status, notas,
+                    fecha_derivacion, razon_derivacion,
                     created_at, updated_at,
                     0 as mensaje_count
                 FROM leads
                 WHERE {where_sql}
-                ORDER BY dias_transcurridos DESC, updated_at DESC
+                ORDER BY {sort_column} {sort_direction}, updated_at DESC
                 LIMIT %s OFFSET %s
             """
         
@@ -143,6 +180,7 @@ def list_activos():
                 'nivel_intencion': p['nivel_intencion'] or '',
                 'dias_transcurridos': p['dias_transcurridos'] or 0,
                 'descuento_actual': p['descuento_actual'] or 0,
+                'fecha_primer_contacto': p['fecha_primer_contacto'].strftime('%d/%m/%Y') if p['fecha_primer_contacto'] else '',
                 'mensaje_count': p['mensaje_count'] or 0,
                 'followups': {
                     'dia3': {
@@ -164,6 +202,10 @@ def list_activos():
                 },
                 'derivado_a_humano': p['derivado_a_humano'] or False,
                 'agente_asignado': p['agente_asignado'],
+                'chat_status': p['chat_status'] or '',
+                'notas': p['notas'] or '',
+                'fecha_derivacion': p['fecha_derivacion'].isoformat() if p['fecha_derivacion'] else None,
+                'razon_derivacion': p['razon_derivacion'] or '',
                 'created_at': p['created_at'].isoformat() if p['created_at'] else None,
                 'updated_at': p['updated_at'].isoformat() if p['updated_at'] else None
             })
@@ -216,9 +258,17 @@ def get_mensajes(telefono):
                 'prospecto': None
             })
         
-        # Obtener datos del prospecto
+        # Obtener datos completos del prospecto
         cursor.execute("""
-            SELECT nombre, apellido, email, telefono, carrera_interes, plan, estado
+            SELECT 
+                nombre, apellido, email, telefono, carrera_interes, plan, estado,
+                nivel_intencion, descuento_actual, fecha_primer_contacto,
+                followup_dia3_enviado, followup_dia3_fecha,
+                followup_dia5_enviado, followup_dia5_fecha,
+                followup_dia6_enviado, followup_dia6_fecha,
+                followup_dia8_enviado, followup_dia8_fecha,
+                derivado_a_humano, agente_asignado, fecha_derivacion,
+                razon_derivacion, chat_status, notas
             FROM leads
             WHERE telefono = %s
             LIMIT 1
@@ -227,50 +277,49 @@ def get_mensajes(telefono):
         prospecto_data = cursor.fetchone()
         
         # Obtener mensajes usando session_id = telefono
-        # Nota: n8n_chat_histories solo tiene id, session_id, message
-        # Intentar con y sin prefijo 56
         cursor.execute("""
-            SELECT id, session_id, message
+            SELECT id, session_id, message, timestamp
             FROM n8n_chat_histories
             WHERE session_id = %s 
                OR session_id = CONCAT('56', %s)
-               OR REPLACE(session_id, '56', '') = %s
-            ORDER BY id ASC
+               OR session_id = REPLACE(%s, '56', '')
+            ORDER BY timestamp ASC
         """, [telefono, telefono, telefono])
         
         mensajes_raw = cursor.fetchall()
+        
         cursor.close()
         conn.close()
         
-        # Parsear mensajes JSONB
+        # Procesar mensajes
         mensajes = []
         for msg in mensajes_raw:
             try:
-                # El campo message es JSONB, ya viene como dict
-                mensaje_data = msg['message'] if isinstance(msg['message'], dict) else {}
+                import json
+                message_data = json.loads(msg['message']) if isinstance(msg['message'], str) else msg['message']
                 
-                # Extraer tipo y contenido del mensaje
-                # Formato n8n: {"type": "human"/"ai", "content": "texto"}
-                msg_type = mensaje_data.get('type', 'text')
-                content = mensaje_data.get('content', '')
-                
-                # Si no hay content, intentar con data o text
-                if not content:
-                    content = mensaje_data.get('data', mensaje_data.get('text', str(mensaje_data)))
-                
-                mensajes.append({
-                    'id': msg['id'],
-                    'type': msg_type,
-                    'content': content,
-                    'timestamp': None,  # n8n_chat_histories no tiene timestamp
-                    'is_ai': msg_type == 'ai',
-                    'is_human': msg_type == 'human'
-                })
+                # Extraer rol y contenido
+                if isinstance(message_data, dict):
+                    role = message_data.get('type', 'user')
+                    content = message_data.get('content', '')
+                    
+                    # Mapear tipos de n8n a roles estándar
+                    if role == 'human':
+                        role = 'user'
+                    elif role == 'ai':
+                        role = 'assistant'
+                    
+                    mensajes.append({
+                        'id': msg['id'],
+                        'role': role,
+                        'content': content,
+                        'timestamp': msg['timestamp'].isoformat() if msg['timestamp'] else None
+                    })
             except Exception as e:
-                print(f"Error parsing message {msg.get('id')}: {str(e)}")
+                print(f"Error procesando mensaje: {str(e)}")
                 continue
         
-        # Formatear datos del prospecto
+        # Formatear datos del prospecto con información completa
         prospecto = None
         if prospecto_data:
             prospecto = {
@@ -280,7 +329,34 @@ def get_mensajes(telefono):
                 'telefono': prospecto_data['telefono'] or '',
                 'carrera': prospecto_data['carrera_interes'] or '',
                 'plan': prospecto_data['plan'] or '',
-                'estado': prospecto_data['estado'] or ''
+                'estado': prospecto_data['estado'] or '',
+                'nivel_intencion': prospecto_data['nivel_intencion'] or '',
+                'descuento_actual': prospecto_data['descuento_actual'] or 0,
+                'fecha_primer_contacto': prospecto_data['fecha_primer_contacto'].strftime('%d/%m/%Y') if prospecto_data['fecha_primer_contacto'] else '',
+                'followups': {
+                    'dia3': {
+                        'enviado': prospecto_data['followup_dia3_enviado'] or False,
+                        'fecha': prospecto_data['followup_dia3_fecha'].strftime('%d/%m/%Y %H:%M') if prospecto_data['followup_dia3_fecha'] else None
+                    },
+                    'dia5': {
+                        'enviado': prospecto_data['followup_dia5_enviado'] or False,
+                        'fecha': prospecto_data['followup_dia5_fecha'].strftime('%d/%m/%Y %H:%M') if prospecto_data['followup_dia5_fecha'] else None
+                    },
+                    'dia6': {
+                        'enviado': prospecto_data['followup_dia6_enviado'] or False,
+                        'fecha': prospecto_data['followup_dia6_fecha'].strftime('%d/%m/%Y %H:%M') if prospecto_data['followup_dia6_fecha'] else None
+                    },
+                    'dia8': {
+                        'enviado': prospecto_data['followup_dia8_enviado'] or False,
+                        'fecha': prospecto_data['followup_dia8_fecha'].strftime('%d/%m/%Y %H:%M') if prospecto_data['followup_dia8_fecha'] else None
+                    }
+                },
+                'derivado_a_humano': prospecto_data['derivado_a_humano'] or False,
+                'agente_asignado': prospecto_data['agente_asignado'] or '',
+                'fecha_derivacion': prospecto_data['fecha_derivacion'].strftime('%d/%m/%Y %H:%M') if prospecto_data['fecha_derivacion'] else '',
+                'razon_derivacion': prospecto_data['razon_derivacion'] or '',
+                'chat_status': prospecto_data['chat_status'] or '',
+                'notas': prospecto_data['notas'] or ''
             }
         
         return jsonify({
@@ -423,7 +499,7 @@ def cambiar_estado():
 
 @prospectos_activos_bp.route('/api/stats')
 def get_stats():
-    """Obtiene estadísticas de prospectos activos"""
+    """Obtiene estadísticas de prospectos activos por estado"""
     try:
         conn = get_db_connection()
         if not conn:
@@ -450,8 +526,7 @@ def get_stats():
                 'success': True,
                 'stats': {
                     'total_activos': 0,
-                    'por_estado': [],
-                    'por_plan': []
+                    'por_estado': []
                 }
             })
         
@@ -462,25 +537,47 @@ def get_stats():
         """)
         total_activos = cursor.fetchone()['total']
         
-        # Por estado
+        # Por estado con nombres descriptivos
         cursor.execute("""
-            SELECT estado, COUNT(*) as count
+            SELECT 
+                estado, 
+                COUNT(*) as count
             FROM leads
             WHERE estado IS NOT NULL
             GROUP BY estado
             ORDER BY count DESC
         """)
-        por_estado = cursor.fetchall()
+        por_estado_raw = cursor.fetchall()
         
-        # Por plan
-        cursor.execute("""
-            SELECT plan, COUNT(*) as count
-            FROM leads
-            WHERE plan IS NOT NULL
-            GROUP BY plan
-            ORDER BY count DESC
-        """)
-        por_plan = cursor.fetchall()
+        # Mapeo de estados a nombres descriptivos
+        estado_nombres = {
+            'nuevo': 'Nuevo',
+            'calificando': 'Calificando',
+            'persuadiendo': 'Persuadiendo',
+            'listo_matricula': 'Listo para Matrícula',
+            'perdido': 'Perdido',
+            'en_proceso': 'En Proceso'
+        }
+        
+        # Mapeo de estados a colores
+        estado_colores = {
+            'nuevo': 'primary',
+            'calificando': 'info',
+            'persuadiendo': 'warning',
+            'listo_matricula': 'success',
+            'perdido': 'danger',
+            'en_proceso': 'secondary'
+        }
+        
+        por_estado = []
+        for row in por_estado_raw:
+            estado_key = row['estado']
+            por_estado.append({
+                'estado': estado_key,
+                'nombre': estado_nombres.get(estado_key, estado_key),
+                'color': estado_colores.get(estado_key, 'secondary'),
+                'count': row['count']
+            })
         
         cursor.close()
         conn.close()
@@ -489,8 +586,7 @@ def get_stats():
             'success': True,
             'stats': {
                 'total_activos': total_activos,
-                'por_estado': por_estado,
-                'por_plan': por_plan
+                'por_estado': por_estado
             }
         })
         
@@ -502,7 +598,89 @@ def get_stats():
             'success': True,
             'stats': {
                 'total_activos': 0,
-                'por_estado': [],
-                'por_plan': []
+                'por_estado': []
+            }
+        })
+
+@prospectos_activos_bp.route('/api/filter-options')
+def get_filter_options():
+    """Obtiene las opciones disponibles para los filtros tipo Excel"""
+    try:
+        conn = get_db_connection()
+        if not conn:
+            return jsonify({'success': False, 'error': 'Database connection failed'}), 500
+        
+        cursor = conn.cursor()
+        
+        # Verificar si existe la tabla
+        cursor.execute("""
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_name = 'leads'
+            );
+        """)
+        table_exists = cursor.fetchone()['exists']
+        
+        if not table_exists:
+            cursor.close()
+            conn.close()
+            return jsonify({
+                'success': True,
+                'options': {
+                    'carreras': [],
+                    'planes': [],
+                    'estados': []
+                }
+            })
+        
+        # Obtener carreras únicas
+        cursor.execute("""
+            SELECT DISTINCT carrera_interes
+            FROM leads
+            WHERE carrera_interes IS NOT NULL AND carrera_interes != ''
+            ORDER BY carrera_interes
+        """)
+        carreras = [row['carrera_interes'] for row in cursor.fetchall()]
+        
+        # Obtener planes únicos
+        cursor.execute("""
+            SELECT DISTINCT plan
+            FROM leads
+            WHERE plan IS NOT NULL AND plan != ''
+            ORDER BY plan
+        """)
+        planes = [row['plan'] for row in cursor.fetchall()]
+        
+        # Obtener estados únicos
+        cursor.execute("""
+            SELECT DISTINCT estado
+            FROM leads
+            WHERE estado IS NOT NULL AND estado != ''
+            ORDER BY estado
+        """)
+        estados = [row['estado'] for row in cursor.fetchall()]
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'options': {
+                'carreras': carreras,
+                'planes': planes,
+                'estados': estados
+            }
+        })
+        
+    except Exception as e:
+        print(f"Error in get_filter_options: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': True,
+            'options': {
+                'carreras': [],
+                'planes': [],
+                'estados': []
             }
         })
