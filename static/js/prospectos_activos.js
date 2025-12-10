@@ -402,7 +402,7 @@ function renderEstado(estado) {
         'calificando': { label: 'Calificando', bg: '#fef3c7', color: '#92400e' },
         'persuadiendo': { label: 'Persuadiendo', bg: '#fce7f3', color: '#831843' },
         'listo_matricula': { label: 'Listo', bg: '#d1fae5', color: '#065f46' },
-        'en_proceso': { label: 'Activo', bg: '#dbeafe', color: '#1e40af' },
+        'en_proceso': { label: 'En proceso primer contacto', bg: '#dbeafe', color: '#1e40af' },
         'perdido': { label: 'Perdido', bg: '#fee2e2', color: '#991b1b' },
         'primer_contacto': { label: 'Primer Contacto', bg: '#d1fae5', color: '#166534' }
     };

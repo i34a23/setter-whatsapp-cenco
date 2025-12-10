@@ -832,3 +832,89 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// ========================================
+// FORMULARIO MANUAL
+// ========================================
+
+function openManualModal() {
+    const modal = document.getElementById('manualModal');
+    if (modal) {
+        modal.classList.add('active');
+        document.getElementById('manualForm').reset();
+        feather.replace();
+    }
+}
+
+function closeManualModal() {
+    const modal = document.getElementById('manualModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.getElementById('manualForm').reset();
+    }
+}
+
+// Manejar envío del formulario
+document.addEventListener('DOMContentLoaded', function() {
+    const manualForm = document.getElementById('manualForm');
+    if (manualForm) {
+        manualForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const btnSave = document.getElementById('btnSaveManual');
+            const originalText = btnSave.innerHTML;
+            btnSave.disabled = true;
+            btnSave.innerHTML = '<i data-feather="loader" class="spinner"></i> Guardando...';
+            feather.replace();
+            
+            try {
+                // Recopilar datos del formulario
+                const formData = new FormData(manualForm);
+                const data = {};
+                
+                for (let [key, value] of formData.entries()) {
+                    if (value.trim() !== '') {
+                        data[key] = value.trim();
+                    }
+                }
+                
+                // Validar campos requeridos
+                if (!data.nombre || !data.apellidos) {
+                    alert('Por favor completa los campos obligatorios: Nombre y Apellidos');
+                    btnSave.disabled = false;
+                    btnSave.innerHTML = originalText;
+                    feather.replace();
+                    return;
+                }
+                
+                // Enviar al backend
+                const response = await fetch('/prospectos/api/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ Prospecto creado exitosamente');
+                    closeManualModal();
+                    loadProspectos();
+                    loadStats();
+                } else {
+                    alert('❌ Error: ' + result.error);
+                }
+                
+            } catch (error) {
+                console.error('Error al crear prospecto:', error);
+                alert('❌ Error al crear prospecto: ' + error.message);
+            } finally {
+                btnSave.disabled = false;
+                btnSave.innerHTML = originalText;
+                feather.replace();
+            }
+        });
+    }
+});

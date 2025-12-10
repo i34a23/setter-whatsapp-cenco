@@ -1,0 +1,31 @@
+Analiza la informacion actual del usuario, y ademas analiza detalladamente el historial de la conversacion y busca informacion que deba ser actualizada segun las ultimas interacciones:
+
+
+1. carrera de interes: el usuario actualiza la carrera de interes, de lo contrario mantener la original.
+3. experiencia_laboral: experiencia laboral acreditable de al menos 2 años opciones de respuesta: 
+    - (años solo el entero cuando el usuario indique que tiene experiencia acreditable), 
+    - sin experiencia 
+    - insifciente (Declara que tiene experiencia, pero no es acreditable)
+3. plan:
+    - Si el usuario tiene experiencia laboral acreditable: 'Plan Especial'
+    - Si el usuario NO tiene experiencia laboral acreditable: 'Plan Regular'
+4. nivel_intencion: analiza emocionalmente el nivel de intencion del prospecto por querer avanzar con el proceso de matricula. Opciones:
+    - Sin intencion
+    - Baja
+    - Media
+    - Alta
+5. estado: califica al usuario en un estado de la etapa del flujo de matricula. opciones:
+    - calificando: el prospecto esta dentro del flujo de calificacion de matricula
+    - persuadiendo: el usuario realiza preguntas, objeciones, o busca obtener mas información de los servicios
+    - perdido: el usuario indica abiertamente que no tiene interes de nuestros servicios,o ya esta estudiando, o cualquier otra situacion que le impida matricularse con nosotros.
+    - Derivado a un agente: el usuario completo el proceso exitosamente y se le transfiere a un agente.
+5.1 si el prospecto es derivado a un agente: agrega a tu respuesta:
+    - derivado_a_humano: TRUE
+    - fecha_derivacion: fecha actual
+
+
+Tu respuesta solo debe contener un json valido con los campos: carrera_interes, experiencia_laboral, plan, nivel_intencion, estado, derivado_a_humano, fecha_derivacion
+omite explicaciones o comentarios.
+
+PASOS OBLIGATORIOS:
+ejecuta la herramienta 'Actualizar prospecto' y actualiza los datos del usuario

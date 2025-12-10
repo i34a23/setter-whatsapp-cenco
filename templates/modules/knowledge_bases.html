@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="module-header">
+    <div class="header-content">
+        <div>
+            <h2>Bases de Conocimiento</h2>
+            <p class="module-description">Gestiona tus bases de conocimiento y puntos vectoriales</p>
+        </div>
+        <div class="header-buttons">
+            <button class="btn btn-primary" onclick="openCreateModal()">
+                <i data-feather="plus"></i>
+                Nueva Base de Conocimiento
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="stats-cards-container" id="statsCardsContainer">
+    <div class="stats-card stats-card-loading">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando estadísticas...</span>
+        </div>
+    </div>
+</div>
+
+<!-- Grid de Bases de Conocimiento -->
+<div class="module-content">
+    <div id="basesGrid" style="display: none;">
+        <div class="kb-grid" id="kbGridContainer">
+            <!-- Las cards se cargarán aquí dinámicamente -->
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" id="emptyState">
+        <i data-feather="database" style="width: 64px; height: 64px; color: var(--color-text-tertiary);"></i>
+        <h3>No hay bases de conocimiento</h3>
+        <p>Crea tu primera base de conocimiento para empezar</p>
+        <button class="btn btn-primary" onclick="openCreateModal()">
+            <i data-feather="plus"></i>
+            Nueva Base de Conocimiento
+        </button>
+    </div>
+</div>
+
+<!-- Modal: Crear Base de Conocimiento -->
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i data-feather="plus-circle"></i>
+                    Nueva Base de Conocimiento
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createForm">
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre *</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" required
+                               placeholder="Ej: CFT CENCO Info">
+                    </div>
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="descripcion" name="descripcion" rows="3"
+                                  placeholder="Describe el contenido de esta base de conocimiento..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="collection_name" class="form-label">Nombre de Colección (Qdrant)</label>
+                        <input type="text" class="form-control" id="collection_name" name="collection_name"
+                               placeholder="Se generará automáticamente si se deja vacío">
+                        <small class="text-muted">Solo letras minúsculas, números y guiones bajos</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="createBase()">
+                    <i data-feather="check"></i>
+                    Crear Base
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Eliminar Base -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i data-feather="alert-triangle"></i>
+                    Confirmar Eliminación
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro que deseas eliminar esta base de conocimiento?</p>
+                <p class="text-danger mb-0"><strong>Esta acción no se puede deshacer.</strong> Se eliminarán todos los puntos asociados.</p>
+                <input type="hidden" id="deleteBaseId">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                    <i data-feather="trash-2"></i>
+                    Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/knowledge_base.css') }}">
+<script src="{{ url_for('static', filename='js/knowledge_base.js') }}"></script>
+<script>
+    feather.replace();
+    loadStats();
+    loadBases();
+</script>
+{% endblock %}

@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="module-header">
+    <div class="header-content">
+        <div>
+            <div class="breadcrumb">
+                <a href="/knowledge_base/bases" class="breadcrumb-link">
+                    <i data-feather="arrow-left"></i>
+                    Bases de Conocimiento
+                </a>
+            </div>
+            <h2 id="baseName">Cargando...</h2>
+            <p class="module-description" id="baseDescription"></p>
+        </div>
+        <div class="header-buttons">
+            <button class="btn btn-secondary" onclick="openImportModal()">
+                <i data-feather="upload"></i>
+                Importar JSON
+            </button>
+            <button class="btn btn-warning" onclick="syncAllPoints()">
+                <i data-feather="refresh-cw"></i>
+                Sincronizar Todo
+            </button>
+            <button class="btn btn-primary" onclick="openCreatePointModal()">
+                <i data-feather="plus"></i>
+                Nuevo Punto
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="stats-cards-container" id="statsCardsContainer">
+    <div class="stats-card stats-card-loading">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando estadísticas...</span>
+        </div>
+    </div>
+</div>
+
+<!-- Split View: Sidebar + Panel -->
+<div class="kb-detail-container">
+    <!-- Sidebar izquierdo: Lista de puntos -->
+    <div class="kb-sidebar">
+        <div class="kb-sidebar-header">
+            <input type="text" class="form-control" id="searchPoints" placeholder="Buscar puntos..."
+                onkeyup="searchPoints()">
+        </div>
+
+        <div class="kb-sidebar-body" id="pointsList">
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-3 text-muted">Cargando puntos...</p>
+            </div>
+        </div>
+
+        <div class="kb-sidebar-footer">
+            <div class="pagination-info" id="paginationInfo">
+                Página 1 de 1
+            </div>
+            <div class="pagination-controls">
+                <button class="btn btn-sm btn-secondary" onclick="previousPage()" id="btnPrev" disabled>
+                    <i data-feather="chevron-left"></i>
+                </button>
+                <button class="btn btn-sm btn-secondary" onclick="nextPage()" id="btnNext" disabled>
+                    <i data-feather="chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel derecho: Detalle del punto -->
+    <div class="kb-panel">
+        <div class="kb-panel-empty" id="panelEmpty">
+            <i data-feather="mouse-pointer" style="width: 64px; height: 64px; opacity: 0.3;"></i>
+            <p>Selecciona un punto de la lista para ver su contenido</p>
+        </div>
+
+        <div class="kb-panel-content" id="panelContent" style="display: none;">
+            <div class="kb-panel-header">
+                <div class="kb-panel-title">
+                    <h4>Detalle del Punto</h4>
+                    <span class="badge" id="syncBadge"></span>
+                </div>
+                <div class="kb-panel-actions">
+                    <button class="btn btn-sm btn-warning" onclick="syncCurrentPoint()" id="btnSync">
+                        <i data-feather="refresh-cw"></i>
+                        Sincronizar
+                    </button>
+                    <button class="btn btn-sm btn-primary" onclick="savePoint()" id="btnSave">
+                        <i data-feather="save"></i>
+                        Guardar
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteCurrentPoint()" id="btnDelete">
+                        <i data-feather="trash-2"></i>
+                        Eliminar
+                    </button>
+                </div>
+            </div>
+
+            <div class="kb-panel-body">
+                <input type="hidden" id="currentPointId">
+
+                <div class="form-group">
+                    <label for="pageContent">Page Content *</label>
+                    <textarea class="form-control" id="pageContent" rows="12"
+                        placeholder="Ingresa el contenido del punto..."></textarea>
+                    <small class="text-muted">
+                        <span id="charCount">0</span> caracteres |
+                        <span id="tokenCount">~0</span> tokens
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label for="metadata">Metadata (JSON)</label>
+                    <textarea class="form-control font-monospace" id="metadata" rows="8"
+                        placeholder='{\n  "id": "example_id",\n  "tipo": "informacional",\n  "categoria": "general"\n}'></textarea>
+                    <small class="text-muted">Formato JSON válido (opcional)</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Crear Punto -->
+<div class="modal fade" id="createPointModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i data-feather="plus-circle"></i>
+                    Nuevo Punto
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="newPageContent">Page Content *</label>
+                    <textarea class="form-control" id="newPageContent" rows="8"
+                        placeholder="Ingresa el contenido del punto..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="newMetadata">Metadata (JSON)</label>
+                    <textarea class="form-control font-monospace" id="newMetadata" rows="6"
+                        placeholder='{\n  "id": "example_id",\n  "tipo": "informacional"\n}'></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="createPoint()">
+                    <i data-feather="check"></i>
+                    Crear Punto
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Importar JSON -->
+<div class="modal fade" id="importModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i data-feather="upload"></i>
+                    Importar desde JSON
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="jsonFile" class="form-label">Seleccionar archivo JSON</label>
+                    <input type="file" class="form-control" id="jsonFile" accept=".json">
+                </div>
+                <div class="alert alert-info">
+                    <strong>Formatos aceptados:</strong>
+                    <pre class="mb-0 mt-2"><code>// Formato en inglés:
+[
+  {
+    "pageContent": "Texto del punto...",
+    "metadata": {
+      "id": "ejemplo_1",
+      "tipo": "informacional"
+    }
+  }
+]
+
+// Formato en español:
+[
+  {
+    "contenidoPagina": "Texto del punto...",
+    "metadatos": {
+      "id": "ejemplo_1",
+      "tipo": "informacional"
+    }
+  }
+]</code></pre>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="importJSON()">
+                    <i data-feather="upload"></i>
+                    Importar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="kbId" value="{{ kb_id }}">
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/knowledge_base.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/knowledge_base_detail.css') }}">
+<script src="{{ url_for('static', filename='js/knowledge_base_detail.js') }}"></script>
+<script>
+    const KB_ID = '{{ kb_id }}';
+    feather.replace();
+    loadBaseInfo();
+    loadBaseStats();
+    loadPoints();
+</script>
+{% endblock %}

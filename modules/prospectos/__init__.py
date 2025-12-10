@@ -276,17 +276,95 @@ def upload_file():
             TARGET_FIELDS
         )
         
+        # Convertir NaN a None para serialización JSON
+        import math
+        def clean_nan(obj):
+            if isinstance(obj, dict):
+                return {k: clean_nan(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [clean_nan(item) for item in obj]
+            elif isinstance(obj, float) and math.isnan(obj):
+                return None
+            return obj
+        
+        preview_clean = clean_nan(preview)
+        suggested_mapping_clean = clean_nan(suggested_mapping)
+        
         return jsonify({
             'success': True,
             'file_id': file_id,
             'filename': filename,
-            'preview': preview,
-            'suggested_mapping': suggested_mapping,
+            'preview': preview_clean,
+            'suggested_mapping': suggested_mapping_clean,
             'target_fields': list(TARGET_FIELDS.keys())
         })
     
     except Exception as e:
         print(f"Error in upload_file: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@prospectos_bp.route('/api/create', methods=['POST'])
+def create_prospecto():
+    """Endpoint para crear un prospecto manualmente"""
+    try:
+        data = request.get_json()
+        
+        conn = get_db_connection()
+        if not conn:
+            return jsonify({'success': False, 'error': 'Database connection failed'}), 500
+        
+        cursor = conn.cursor()
+        
+        # Normalizar teléfonos si existen
+        if data.get('telefono_1'):
+            data['telefono_1'] = normalize_phone(data['telefono_1'])
+        if data.get('telefono_2'):
+            data['telefono_2'] = normalize_phone(data['telefono_2'])
+        
+        # Preparar datos para inserción
+        columns = []
+        values = []
+        
+        # Campos permitidos
+        allowed_fields = ['nombre', 'apellidos', 'email_1', 'email_2', 'telefono_1', 
+                         'telefono_2', 'programa', 'rut', 'propietario', 'canal', 
+                         'referrer', 'carrera_postula', 'experiencia', 'urgencia']
+        
+        for field in allowed_fields:
+            if field in data and data[field]:
+                columns.append(field)
+                values.append(data[field])
+        
+        # Agregar metadatos
+        columns.extend(['archivo_origen', 'lote_importacion', 'fecha_creacion'])
+        values.extend(['Manual', f"manual_{datetime.now().strftime('%Y%m%d_%H%M%S')}", 
+                      datetime.now().strftime('%Y-%m-%d')])
+        
+        if not columns:
+            return jsonify({'success': False, 'error': 'No hay datos para insertar'}), 400
+        
+        placeholders = ', '.join(['%s'] * len(values))
+        columns_str = ', '.join(columns)
+        
+        query = f"INSERT INTO prospectos_raw ({columns_str}) VALUES ({placeholders}) RETURNING id"
+        cursor.execute(query, values)
+        result = cursor.fetchone()
+        prospecto_id = result['id'] if isinstance(result, dict) else result[0]
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Prospecto creado exitosamente',
+            'prospecto_id': prospecto_id
+        })
+        
+    except Exception as e:
+        print(f"Error in create_prospecto: {str(e)}")
         import traceback
         traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500

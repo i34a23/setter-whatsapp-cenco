@@ -7,10 +7,16 @@
             <h2>Prospectos RAW</h2>
             <p class="module-description">Gestiona y administra tus listas de prospectos</p>
         </div>
-        <button class="btn-primary" onclick="openUploadModal()">
-            <i data-feather="upload"></i>
-            Subir Lista
-        </button>
+        <div class="header-buttons">
+            <button class="btn-secondary" onclick="openManualModal()">
+                <i data-feather="user-plus"></i>
+                Agregar Manual
+            </button>
+            <button class="btn-primary" onclick="openUploadModal()">
+                <i data-feather="upload"></i>
+                Subir Lista
+            </button>
+        </div>
     </div>
 </div>
 
@@ -276,6 +282,114 @@
                     </button>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Formulario Manual -->
+<div class="modal" id="manualModal">
+    <div class="modal-content modal-medium">
+        <div class="modal-header">
+            <h3>Agregar Prospecto Manual</h3>
+            <button class="modal-close" onclick="closeManualModal()">
+                <i data-feather="x"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="manualForm" class="manual-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="manual_nombre">Nombre *</label>
+                        <input type="text" id="manual_nombre" name="nombre" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="manual_apellidos">Apellidos *</label>
+                        <input type="text" id="manual_apellidos" name="apellidos" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="manual_email_1">Email Principal</label>
+                        <input type="email" id="manual_email_1" name="email_1">
+                    </div>
+                    <div class="form-group">
+                        <label for="manual_email_2">Email Secundario</label>
+                        <input type="email" id="manual_email_2" name="email_2">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="manual_telefono_1">Teléfono Principal</label>
+                        <input type="tel" id="manual_telefono_1" name="telefono_1" placeholder="569XXXXXXXX">
+                    </div>
+                    <div class="form-group">
+                        <label for="manual_telefono_2">Teléfono Secundario</label>
+                        <input type="tel" id="manual_telefono_2" name="telefono_2" placeholder="569XXXXXXXX">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="manual_rut">RUT</label>
+                        <input type="text" id="manual_rut" name="rut" placeholder="12345678-9">
+                    </div>
+                    <div class="form-group">
+                        <label for="manual_programa">Programa</label>
+                        <input type="text" id="manual_programa" name="programa">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="manual_carrera">Carrera a la que Postula</label>
+                        <input type="text" id="manual_carrera" name="carrera_postula">
+                    </div>
+                    <div class="form-group">
+                        <label for="manual_propietario">Propietario</label>
+                        <input type="text" id="manual_propietario" name="propietario">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="manual_canal">Canal</label>
+                        <input type="text" id="manual_canal" name="canal" placeholder="ej: Facebook, WhatsApp">
+                    </div>
+                    <div class="form-group">
+                        <label for="manual_referrer">Referrer</label>
+                        <input type="text" id="manual_referrer" name="referrer">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="manual_experiencia">Experiencia Laboral</label>
+                        <input type="text" id="manual_experiencia" name="experiencia" placeholder="ej: 3 años">
+                    </div>
+                    <div class="form-group">
+                        <label for="manual_urgencia">Urgencia</label>
+                        <select id="manual_urgencia" name="urgencia">
+                            <option value="">Seleccionar...</option>
+                            <option value="Inmediata">Inmediata</option>
+                            <option value="1-2 semanas">1-2 semanas</option>
+                            <option value="1 mes">1 mes</option>
+                            <option value="Más de 1 mes">Más de 1 mes</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeManualModal()">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn-primary" id="btnSaveManual">
+                        <i data-feather="save"></i>
+                        Guardar Prospecto
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
